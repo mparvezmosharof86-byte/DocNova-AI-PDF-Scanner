@@ -1,35 +1,85 @@
-# Gradle files
+# ==========================================
+# DocNova: AI PDF & Scanner - Master .gitignore
+# Platform: Multi-language (C++, Rust, Python, Native)
+# ==========================================
+
+# 1. Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# 2. Rust Engine (Cargo Build Artifacts)
+/pdf-engine/target/
+**/*.rs.bk
+Cargo.lock
+
+# 3. C++ & CMake Build Files
+/core-cv/build/
+/core-cv/bin/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.ninja
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+
+# 4. Python & AI Engine (Caches & Virtualenvs)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.pytest_cache/
+*.ipynb_checkpoints
+
+# 5. Large AI Model Weights (To avoid hitting GitHub 100MB limit)
+*.pth
+*.pt
+*.onnx
+*.weights
+*.bin
+*.tflite
+!models/.gitkeep
+
+# 6. Android & Gradle Build Files
 .gradle/
 build/
-.kotlin/
-
-# Local configuration file (sdk path, etc)
-local.properties
-
-# Log/OS Files
-*.log
-
-# Android Studio generated files and folders
-captures/
-.externalNativeBuild/
-.cxx/
-*.aab
-*.apk
-output-metadata.json
-
-# IntelliJ
-*.iml
-.idea/
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
-
-# Keystore files
-*.jks
+app/build/
 *.keystore
+!debug.keystore
+local.properties
+.idea/
+*.iml
 
-# Google Services (e.g. APIs or Firebase)
-google-services.json
+# 7. IDE & Editor Specific
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
 
-# Android Profiling
-*.hprof
+# 8. Temporary Logs and Outputs
+*.log
+scanned_warp.jpg
+document_structure.json
+AI_Pristine_Reconstructed.pdf
+output/
+temp/
