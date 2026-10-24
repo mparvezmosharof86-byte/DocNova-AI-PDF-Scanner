@@ -121,7 +121,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // ৩. নো-গুগল নেটিভ QR কোড স্ট্যাম্প (ডকুমেন্টের নিচের কোনায় সিকিউরিটি সিল)
     println!("[+] নো-গুগল নেটিভ কিউআর ভেরিফিকেশন স্ট্যাম্প আঁকা হচ্ছে...");
     let qr = QrCode::new(b"DocNova-AI-Verified-Document-NovaStudio24")?;
-    let qr_modules = qr.to_colors();
+    let qr_modules = qr.to_vec();
     let qr_width = qr.width();
 
     let qr_origin_x = 175.0; // ডানে নিচের মার্জিন (mm)
@@ -133,7 +133,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for y in 0..qr_width {
         for x in 0..qr_width {
             let idx = y * qr_width + x;
-            if qr_modules[idx] == qrcode::Color::Dark {
+            if qr_modules[idx] {
                 let rect_x = qr_origin_x + (x as f64 * qr_box_size);
                 let rect_y = qr_origin_y + ((qr_width - y) as f64 * qr_box_size);
 
@@ -148,9 +148,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     is_closed: true,
                     has_fill: true,
                     has_stroke: false,
-                    is_clipping_path: false,
                 };
-                current_layer.add_shape(line);
+                current_layer.add_polygon(line);
             }
         }
     }
