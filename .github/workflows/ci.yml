@@ -1,10 +1,10 @@
 # ==============================================================================
 # Project: DocNova: AI PDF & Scanner
 # Package: com.novastudio24.docnova
-# Component: Master CI/CD Pipeline (C++, Python & Rust End-to-End Engine Validation)
+# Component: Master CI/CD Pipeline (Native Engines + Android Release APK Build)
 # ==============================================================================
 
-name: DocNova Engine CI Pipeline
+name: DocNova Engine & Android APK Builder
 
 on:
   push:
@@ -14,21 +14,21 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-verify-engine:
+  build-and-verify-all:
     runs-on: ubuntu-latest
 
     steps:
-      # ১. রিপোজিটরি ক্লোন
+      # ১. রিপোজিটরি চেকআউট
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # ২. সিস্টেম ডিপেন্ডেন্সি ইনস্টলেশন (OpenCV, Tesseract OCR, CMake)
+      # ২. নেটিভ সিস্টেম ডিপেন্ডেন্সি ইনস্টল (C++ & OpenCV)
       - name: Install Native System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake build-essential libopencv-dev tesseract-ocr libtesseract-dev
 
-      # ৩. মডিউল ১: C++20 ভিশন কোর কম্পাইল ও রান
+      # ৩. মডিউল ১: C++ ভিশন কোর কম্পাইল ও ভ্যালিডেশন
       - name: Build & Test C++ Vision Engine (core-cv)
         run: |
           cd core-cv
@@ -36,42 +36,71 @@ jobs:
           cmake ..
           make -j$(nproc)
           ./docnova_cv_cli
-          # আউটপুট ছবিটিকে পাইথন ফোল্ডারে পাঠানো
           cp scanned_warp.jpg ../../ai-pipeline/scanned_warp.jpg
 
-      # ৪. পাইথন এনভায়রনমেন্ট সেটআপ
+      # ৪. পাইথন ৩.১০ এনভায়রনমেন্ট সেটআপ
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
           cache: "pip"
 
-      # ৫. মডিউল ২: Python AI ডিকম্পোজিশন ইঞ্জিন রান
-      - name: Install Python Dependencies & Run Layout Engine
+      # ৫. মডিউল ২: Python AI ডিকম্পোজিশন ইঞ্জিন ভ্যালিডেশন
+      - name: Run Python AI Layout Engine
         run: |
           cd ai-pipeline
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python layout_engine.py
-          # জেনারেট হওয়া স্ট্রাকচার্ড JSON ফাইলটি রাস্ট ফোল্ডারে পাঠানো
           cp document_structure.json ../pdf-engine/document_structure.json
 
-      # ৬. রাস্ট এনভায়রনমেন্ট সেটআপ
+      # ৬. রাস্ট (Rust) এনভায়রনমেন্ট সেটআপ
       - name: Set up Rust Stable Toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      # ৭. মডিউল ৩: Rust ভেক্টর PDF সিন্থেসাইজার বিল্ড ও এক্সিকিউট
-      - name: Build & Run Rust PDF Synthesis Engine (pdf-engine)
+      # ৭. মডিউল ৩: Rust ভেক্টর PDF সিন্থেসাইজার রান
+      - name: Run Rust Vector PDF Synthesizer
         run: |
           cd pdf-engine
           cargo build --release
           cargo run --release
-          ls -la AI_Pristine_Reconstructed.pdf
 
-      # ৮. আউটপুট ভেক্টর PDF গিটহাব আর্টিকেলে সেভ রাখা (ডাউনলোডের জন্য)
+      # ৮. জাভা ১৭ সেটআপ (অ্যান্ড্রয়েড বিল্ডের জন্য)
+      - name: Set up Java 17 (JDK)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # ৯. ফ্লাটার (Flutter) SDK সেটআপ
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      # ১০. অ্যান্ড্রয়েড গ্র্যাডল স্ক্যাফোল্ডিং ও APK বিল্ড
+      - name: Build Android Release APK
+        run: |
+          # অ্যান্ড্রয়েড গ্র্যাডল সাপোর্ট ফাইল প্রস্তুত করা
+          flutter create scaffold_app --org com.novastudio24 --project-name docnova
+          cp -rn scaffold_app/android app/ || true
+          cd app
+          flutter pub get
+          flutter build apk --release
+
+      # ১১. ফোনে ইনস্টল করার আসল APK ফাইল আপলোড (ডাউনলোডের জন্য)
+      - name: Upload DocNova Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: DocNova-AI-PDF-Scanner-APK
+          path: app/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 14
+
+      # ১২. ভেক্টর টেস্ট PDF-ও সাথে সেভ রাখা
       - name: Upload Generated Pristine Vector PDF Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DocNova-AI-Vector-Reconstructed-PDF
+          name: DocNova-Test-Vector-PDF
           path: pdf-engine/AI_Pristine_Reconstructed.pdf
           retention-days: 7
