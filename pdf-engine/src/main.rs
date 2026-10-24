@@ -14,6 +14,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct Element {
     #[serde(rename = "type")]
@@ -28,6 +29,7 @@ struct Element {
     color_rgb: Vec<u8>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct DocumentMetadata {
     original_width: f64,
@@ -36,6 +38,7 @@ struct DocumentMetadata {
     total_text_blocks: usize,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct DocumentData {
     version: String,
@@ -118,7 +121,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         current_layer.use_text(&el.text, pt_size, pdf_x, pdf_y, active_font);
     }
 
-    // ৩. নো-গুগল নেটিভ QR কোড স্ট্যাম্প (ডকুমেন্টের নিচের কোনায় সিকিউরিটি সিল)
+    // ৩. নো-গুগল নেটিভ কিউআর ভেক্টর স্ট্যাম্প (সঠিক Polygon স্ট্রাকচার সহ)
     println!("[+] নো-গুগল নেটিভ কিউআর ভেরিফিকেশন স্ট্যাম্প আঁকা হচ্ছে...");
     let qr = QrCode::new(b"DocNova-AI-Verified-Document-NovaStudio24")?;
     let qr_modules = qr.to_vec();
@@ -143,13 +146,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     (Point::new(Mm(rect_x + qr_box_size), Mm(rect_y + qr_box_size)), false),
                     (Point::new(Mm(rect_x), Mm(rect_y + qr_box_size)), false),
                 ];
-                let line = Line {
-                    points,
-                    is_closed: true,
-                    has_fill: true,
-                    has_stroke: false,
+
+                let poly = Polygon {
+                    rings: vec![points],
+                    mode: PaintMode::Fill,
+                    winding_order: WindingOrder::NonZero,
                 };
-                current_layer.add_polygon(line);
+
+                current_layer.add_polygon(poly);
             }
         }
     }
