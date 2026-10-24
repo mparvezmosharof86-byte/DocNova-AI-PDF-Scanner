@@ -8,6 +8,7 @@
  */
 
 use printpdf::*;
+use printpdf::path::{PaintMode, WindingOrder};
 use qrcode::QrCode;
 use serde::Deserialize;
 use std::fs::File;
@@ -121,7 +122,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         current_layer.use_text(&el.text, pt_size, pdf_x, pdf_y, active_font);
     }
 
-    // ৩. নো-গুগল নেটিভ কিউআর ভেক্টর স্ট্যাম্প (সঠিক Polygon স্ট্রাকচার সহ)
+    // ৩. নো-গুগল নেটিভ কিউআর ভেক্টর স্ট্যাম্প (সঠিক Path ইমপোর্ট সহ)
     println!("[+] নো-গুগল নেটিভ কিউআর ভেরিফিকেশন স্ট্যাম্প আঁকা হচ্ছে...");
     let qr = QrCode::new(b"DocNova-AI-Verified-Document-NovaStudio24")?;
     let qr_modules = qr.to_vec();
