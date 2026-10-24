@@ -71,9 +71,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let reader = BufReader::new(file);
     let doc_data: DocumentData = serde_json::from_reader(reader)?;
 
-    // ১. নিখুঁত ফ্রেশ ডিজিটাল A4 ক্যানভাস তৈরি (210mm x 297mm)
-    let a4_width_mm = 210.0;
-    let a4_height_mm = 297.0;
+    // ১. নিখুঁত ফ্রেশ ডিজিটাল A4 ক্যানভাস তৈরি (210mm x 297mm - f32 মান)
+    let a4_width_mm = 210.0_f32;
+    let a4_height_mm = 297.0_f32;
 
     let (doc, page1, layer1) = PdfDocument::new(
         "DocNova AI Reconstructed Document",
@@ -89,8 +89,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let font_bold = doc.add_builtin_font(BuiltinFont::HelveticaBold)?;
 
     // পিক্সেল কোঅর্ডিনেট থেকে A4 মিলিমিটারের ম্যাথমেটিক্যাল স্কেলিং
-    let scale_x = a4_width_mm / doc_data.metadata.original_width;
-    let scale_y = a4_height_mm / doc_data.metadata.original_height;
+    let scale_x = (a4_width_mm as f64) / doc_data.metadata.original_width;
+    let scale_y = (a4_height_mm as f64) / doc_data.metadata.original_height;
 
     println!("[+] ভেক্টর টেক্সট বসানো শুরু হচ্ছে (মোট ব্লক: {})...", doc_data.elements.len());
 
@@ -99,9 +99,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             continue;
         }
 
-        // PDF এর উৎপত্তি নিচ-বামে (Bottom-Left), তাই Y এক্সিস রূপান্তর
-        let pdf_x = Mm(el.x * scale_x);
-        let pdf_y = Mm(a4_height_mm - ((el.y + el.height) * scale_y));
+        // PDF এর উৎপত্তি নিচ-বামে (Bottom-Left), তাই Y এক্সিস রূপান্তর (f32 কাস্ট)
+        let pdf_x = Mm((el.x * scale_x) as f32);
+        let pdf_y = Mm((a4_height_mm as f64 - ((el.y + el.height) * scale_y)) as f32);
 
         // কালার নরম্যালাইজেশন (০.০ থেকে ১.০)
         let r = el.color_rgb.get(0).copied().unwrap_or(0) as f32 / 255.0;
@@ -116,21 +116,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             &font_regular
         };
 
-        // আনুপাতিক ফন্ট পয়েন্ট সাইজ
-        let pt_size = (el.font_size * 0.45).clamp(6.0, 72.0);
+        // আনুপাতিক ফন্ট পয়েন্ট সাইজ (f32)
+        let pt_size = ((el.font_size * 0.45).clamp(6.0, 72.0)) as f32;
 
         current_layer.use_text(&el.text, pt_size, pdf_x, pdf_y, active_font);
     }
 
-    // ৩. নো-গুগল নেটিভ কিউআর ভেক্টর স্ট্যাম্প (সঠিক Path ইমপোর্ট সহ)
+    // ৩. নো-গুগল নেটিভ কিউআর ভেক্টর স্ট্যাম্প (f32 কোঅর্ডিনেট)
     println!("[+] নো-গুগল নেটিভ কিউআর ভেরিফিকেশন স্ট্যাম্প আঁকা হচ্ছে...");
     let qr = QrCode::new(b"DocNova-AI-Verified-Document-NovaStudio24")?;
     let qr_modules = qr.to_vec();
     let qr_width = qr.width();
 
-    let qr_origin_x = 175.0; // ডানে নিচের মার্জিন (mm)
-    let qr_origin_y = 12.0;
-    let qr_box_size = 0.65;  // প্রতিটি কিউআর পয়েন্টের মিলিমিটার সাইজ
+    let qr_origin_x = 175.0_f32; // ডানে নিচের মার্জিন (mm)
+    let qr_origin_y = 12.0_f32;
+    let qr_box_size = 0.65_f32;  // প্রতিটি কিউআর পয়েন্টের মিলিমিটার সাইজ
 
     current_layer.set_fill_color(Color::Rgb(Rgb::new(0.1, 0.1, 0.1, None)));
 
@@ -138,8 +138,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         for x in 0..qr_width {
             let idx = y * qr_width + x;
             if qr_modules[idx] {
-                let rect_x = qr_origin_x + (x as f64 * qr_box_size);
-                let rect_y = qr_origin_y + ((qr_width - y) as f64 * qr_box_size);
+                let rect_x = qr_origin_x + (x as f32 * qr_box_size);
+                let rect_y = qr_origin_y + ((qr_width - y) as f32 * qr_box_size);
 
                 let points = vec![
                     (Point::new(Mm(rect_x), Mm(rect_y)), false),
