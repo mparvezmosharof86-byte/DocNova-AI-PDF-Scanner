@@ -1,0 +1,18 @@
+# ==============================================================================
+# DocNova: AI PDF & Scanner - AI Pipeline Python Dependencies
+# Package: com.novastudio24.docnova | Pure Local Offline Processing
+# ==============================================================================
+
+# Core Numerical & Image Processing (Headless for high performance & CI/CD)
+numpy>=1.24.0
+opencv-python-headless>=4.8.0.76
+Pillow>=10.0.0
+
+# Text Recognition & Optical Character Parsing (Local OCR Engine)
+pytesseract>=0.3.10
+
+# Local AI Deep Learning Inference Runtime (Zero Google ML API dependency)
+onnxruntime>=1.16.0
+
+# Geometric & Polygon Vector Calculations
+shapely>=2.0.0
