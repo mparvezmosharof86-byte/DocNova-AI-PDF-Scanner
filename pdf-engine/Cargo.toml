@@ -1,0 +1,33 @@
+# ==============================================================================
+# Project: DocNova: AI PDF & Scanner
+# Package: com.novastudio24.docnova
+# Component: Rust Vector PDF Synthesizer & QR Core Manifest
+# ==============================================================================
+
+[package]
+name = "docnova_pdf_engine"
+version = "0.1.0"
+edition = "2021"
+authors = ["Nova Studio 24"]
+description = "Desktop-grade Vector PDF Reconstruction Engine with Zero Google Dependencies"
+
+[dependencies]
+# Native Vector PDF Synthesis (Pure Rust, no C-lib bloat)
+printpdf = "0.7.0"
+
+# High-Speed Data Serialization & JSON Deserialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Lossless Image & Asset Handling
+image = { version = "0.24", default-features = false, features = ["png", "jpeg"] }
+
+# Native Fast QR & Barcode Matrix Generator (Pure Rust)
+qrcode = { version = "0.12", default-features = false }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
