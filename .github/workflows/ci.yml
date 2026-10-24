@@ -1,0 +1,77 @@
+# ==============================================================================
+# Project: DocNova: AI PDF & Scanner
+# Package: com.novastudio24.docnova
+# Component: Master CI/CD Pipeline (C++, Python & Rust End-to-End Engine Validation)
+# ==============================================================================
+
+name: DocNova Engine CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-verify-engine:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ১. রিপোজিটরি ক্লোন
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # ২. সিস্টেম ডিপেন্ডেন্সি ইনস্টলেশন (OpenCV, Tesseract OCR, CMake)
+      - name: Install Native System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential libopencv-dev tesseract-ocr libtesseract-dev
+
+      # ৩. মডিউল ১: C++20 ভিশন কোর কম্পাইল ও রান
+      - name: Build & Test C++ Vision Engine (core-cv)
+        run: |
+          cd core-cv
+          mkdir -p build && cd build
+          cmake ..
+          make -j$(nproc)
+          ./docnova_cv_cli
+          # আউটপুট ছবিটিকে পাইথন ফোল্ডারে পাঠানো
+          cp scanned_warp.jpg ../../ai-pipeline/scanned_warp.jpg
+
+      # ৪. পাইথন এনভায়রনমেন্ট সেটআপ
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      # ৫. মডিউল ২: Python AI ডিকম্পোজিশন ইঞ্জিন রান
+      - name: Install Python Dependencies & Run Layout Engine
+        run: |
+          cd ai-pipeline
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python layout_engine.py
+          # জেনারেট হওয়া স্ট্রাকচার্ড JSON ফাইলটি রাস্ট ফোল্ডারে পাঠানো
+          cp document_structure.json ../pdf-engine/document_structure.json
+
+      # ৬. রাস্ট এনভায়রনমেন্ট সেটআপ
+      - name: Set up Rust Stable Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      # ৭. মডিউল ৩: Rust ভেক্টর PDF সিন্থেসাইজার বিল্ড ও এক্সিকিউট
+      - name: Build & Run Rust PDF Synthesis Engine (pdf-engine)
+        run: |
+          cd pdf-engine
+          cargo build --release
+          cargo run --release
+          ls -la AI_Pristine_Reconstructed.pdf
+
+      # ৮. আউটপুট ভেক্টর PDF গিটহাব আর্টিকেলে সেভ রাখা (ডাউনলোডের জন্য)
+      - name: Upload Generated Pristine Vector PDF Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DocNova-AI-Vector-Reconstructed-PDF
+          path: pdf-engine/AI_Pristine_Reconstructed.pdf
+          retention-days: 7
