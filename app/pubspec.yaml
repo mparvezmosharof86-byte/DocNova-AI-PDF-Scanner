@@ -1,0 +1,37 @@
+name: docnova
+description: "DocNova: AI PDF & Scanner - Mobile Client for Nova Studio 24"
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # মেটেরিয়াল আইকন ও আধুনিক ডিজাইন
+  cupertino_icons: ^1.0.6
+
+  # রিয়েল-টাইম ক্যামেরা ফিড ও জিরো-ল্যাগ ফ্রেম স্ট্রিমিং
+  camera: ^0.10.5+9
+
+  # অ্যান্ড্রয়েড রানটাইম ক্যামেরা ও স্টোরেজ পারমিশন হ্যান্ডলার
+  permission_handler: ^11.3.1
+
+  # লোকাল ডিভাইস ফাইল সিস্টেম ও ডিরেক্টরি পাথ
+  path_provider: ^2.1.2
+
+  # অ্যাপের ভেতর সরাসরি হাই-রেজোলিউশন ভেক্টর PDF ভিউয়ার
+  pdfx: ^2.6.0
+
+  # স্ক্যান করা PDF বা ইমেজ হোয়াটসঅ্যাপ বা ইমেইলে সরাসরি শেয়ার করার টুল
+  share_plus: ^7.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
