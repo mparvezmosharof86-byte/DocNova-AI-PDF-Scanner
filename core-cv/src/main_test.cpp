@@ -8,6 +8,8 @@
  */
 
 #include "docnova_cv.hpp"
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <iostream>
 #include <chrono>
@@ -32,7 +34,7 @@ int main(int argc, char** argv) {
         }
     } else {
         std::cout << "[i] কোনো ইমেজ ইনপুট দেওয়া হয়নি; সিন্থেটিক 1080p ফ্রেম দিয়ে টেস্ট হচ্ছে...\n";
-        // টেস্ট করার জন্য একটি ডামি ফ্রেম (1920x1080)
+        // টেস্ট করার জন্য একটি ফ্রেম (1920x1080)
         inputImage = cv::Mat(1080, 1920, CV_8UC3, cv::Scalar(40, 40, 40));
         // ফ্রেমের ভেতর একটি বাঁকা কাগজের সিন্থেটিক রেক্ট্যাঙ্গেল আঁকা
         std::vector<cv::Point> syntheticDoc = {
