@@ -24,7 +24,8 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.novastudio24.docnova"
-    compileSdk 34
+    // Android 15 / API 35 Support (Google Play Compliant)
+    compileSdk 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -50,7 +51,6 @@ android {
 
     buildTypes {
         release {
-            // টেস্টিং ও ডিরেক্ট ইনস্টলের জন্য ডিফল্ট সাইনিং
             signingConfig signingConfigs.debug
             minifyEnabled false
             shrinkResources false
@@ -64,4 +64,15 @@ flutter {
 
 dependencies {
     implementation "androidx.multidex:multidex:2.0.1"
+}
+
+// সকল প্লাগইনের জন্য স্বয়ংক্রিয়ভাবে compileSdk 35 নিশ্চিত করা
+rootProject.subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android {
+                compileSdk 35
+            }
+        }
+    }
 }
