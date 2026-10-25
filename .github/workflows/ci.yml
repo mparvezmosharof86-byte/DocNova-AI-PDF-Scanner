@@ -1,7 +1,7 @@
 # ==============================================================================
 # Project: DocNova: AI PDF & Scanner
 # Package: com.novastudio24.docnova
-# Component: Master CI/CD Pipeline (Native Engines + Android Release APK Build)
+# Component: Master CI/CD Pipeline (Direct APK Auto-Publisher via GitHub Release)
 # ==============================================================================
 
 name: DocNova Engine & Android APK Builder
@@ -12,6 +12,9 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build-and-verify-all:
@@ -38,7 +41,7 @@ jobs:
           ./docnova_cv_cli
           cp scanned_warp.jpg ../../ai-pipeline/scanned_warp.jpg
 
-      # ৪. পাইথন ৩.১০ এনভায়রনমেন্ট সেটআপ
+      # ৪. পাইথন এনভায়রনমেন্ট সেটআপ
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
@@ -82,25 +85,20 @@ jobs:
       # ১০. অ্যান্ড্রয়েড গ্র্যাডল স্ক্যাফোল্ডিং ও APK বিল্ড
       - name: Build Android Release APK
         run: |
-          # অ্যান্ড্রয়েড গ্র্যাডল সাপোর্ট ফাইল প্রস্তুত করা
           flutter create scaffold_app --org com.novastudio24 --project-name docnova
           cp -rn scaffold_app/android app/ || true
           cd app
           flutter pub get
           flutter build apk --release
+          # সরাসরি ব্যবহারের জন্য APK কপি ও রিনেম
+          cp build/app/outputs/flutter-apk/app-release.apk ../DocNova.apk
 
-      # ১১. ফোনে ইনস্টল করার আসল APK ফাইল আপলোড (ডাউনলোডের জন্য)
-      - name: Upload DocNova Release APK
-        uses: actions/upload-artifact@v4
+      # ১১. কোনো জিপ ছাড়া সরাসরি DocNova.apk রিলিজ হিসেবে পাবলিশ
+      - name: Publish Direct Unzipped DocNova.apk
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
         with:
-          name: DocNova-AI-PDF-Scanner-APK
-          path: app/build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 14
-
-      # ১২. ভেক্টর টেস্ট PDF-ও সাথে সেভ রাখা
-      - name: Upload Generated Pristine Vector PDF Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: DocNova-Test-Vector-PDF
-          path: pdf-engine/AI_Pristine_Reconstructed.pdf
-          retention-days: 7
+          tag_name: latest
+          name: "DocNova: AI PDF & Scanner (Latest APK)"
+          body: "এই ফাইলটি সরাসরি ডাউনলোড করে মোবাইলে ইনস্টল করতে পারবেন (কোনো আনজিপ করার প্রয়োজন নেই)।"
+          files: DocNova.apk
