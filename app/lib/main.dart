@@ -2,7 +2,7 @@
  * ==============================================================================
  * Project: DocNova: AI PDF & Scanner
  * Package: com.novastudio24.docnova
- * Component: Full-Featured Functional Enterprise Mobile Client
+ * Component: Master Clean Mobile Client (Zero Namespace Conflict)
  * File: main.dart
  * ==============================================================================
  */
@@ -14,7 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:barcode_widget/barcode_widget.dart';
+import 'package:barcode_widget/barcode_widget.dart' as bw;
 import 'package:image/image.dart' as img;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -31,7 +31,7 @@ Future<void> main() async {
   try {
     _availableCameras = await availableCameras();
   } catch (e) {
-    debugPrint("[-] ক্যামেরা এরর: $e");
+    debugPrint("[-] ক্যামেরা লোড এরর: $e");
   }
 
   runApp(const DocNovaApp());
@@ -136,7 +136,6 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // প্রিমিয়াম এআই স্ট্যাটাস ব্যানার
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -171,7 +170,6 @@ class DashboardScreen extends StatelessWidget {
             const Text("Core Engines", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white70)),
             const SizedBox(height: 14),
 
-            // ডক স্ক্যানার কার্ড
             _buildEngineCard(
               context,
               title: "Document Scanner",
@@ -184,7 +182,6 @@ class DashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // আইডি কার্ড ও পাসপোর্ট মোড
             _buildEngineCard(
               context,
               title: "ID Card & Passport Mode",
@@ -239,7 +236,7 @@ class DashboardScreen extends StatelessWidget {
 }
 
 // ==========================================
-// ২. রিয়েল ডকুমেন্ট ক্যামেরা ও পেপার ক্লিনার
+// ২. রিয়েল ডকুমেন্ট ক্যামেরা স্ক্রিন
 // ==========================================
 class DocumentCameraScreen extends StatefulWidget {
   final String modeName;
@@ -308,7 +305,6 @@ class _DocumentCameraScreenState extends State<DocumentCameraScreen> {
       body: Stack(
         children: [
           SizedBox.expand(child: CameraPreview(_controller!)),
-          // ভিউফাইন্ডার গাইড
           Center(
             child: Container(
               width: MediaQuery.of(context).size.width * 0.85,
@@ -346,7 +342,7 @@ class _DocumentCameraScreenState extends State<DocumentCameraScreen> {
 }
 
 // ==========================================
-// ৩. পেপার ফিল্টার ও PDF মেকার স্টুডিও (Clean Paper Engine)
+// ৩. পেপার ফিল্টার ও PDF মেকার স্টুডিও
 // ==========================================
 class CleanPaperStudioScreen extends StatefulWidget {
   final Uint8List rawBytes;
@@ -359,7 +355,7 @@ class CleanPaperStudioScreen extends StatefulWidget {
 
 class _CleanPaperStudioScreenState extends State<CleanPaperStudioScreen> {
   Uint8List? _processedBytes;
-  String _activeFilter = "MAGIC"; // MAGIC, BW, ORIGINAL
+  String _activeFilter = "MAGIC";
   bool _isBusy = false;
 
   @override
@@ -380,11 +376,8 @@ class _CleanPaperStudioScreenState extends State<CleanPaperStudioScreen> {
     img.Image processed;
 
     if (filter == "MAGIC") {
-      // ব্যাকগ্রাউন্ডের ধূসর ছায়া দূর করে ম্যাজিক কালার করা
       processed = img.contrast(decoded, contrast: 135);
-      processed = img.adjustColor(processed, brightness: 1.15, saturation: 1.2);
     } else if (filter == "BW") {
-      // ধবধবে সাদা পেপার এবং কালির নিখুঁত কালো লেখা (Black & White Clean Paper)
       processed = img.grayscale(decoded);
       processed = img.contrast(processed, contrast: 160);
     } else {
@@ -444,10 +437,9 @@ class _CleanPaperStudioScreenState extends State<CleanPaperStudioScreen> {
             child: Center(
               child: _isBusy || _processedBytes == null
                   ? const CircularProgressIndicator(color: Color(0xFF00E5FF))
-                  : Image.memory(_processedBytes!, fit: pw.BoxFit.contain as BoxFit),
+                  : Image.memory(_processedBytes!, fit: BoxFit.contain),
             ),
           ),
-          // ফিল্টার অপশন
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12),
             color: const Color(0xFF161B22),
@@ -460,7 +452,6 @@ class _CleanPaperStudioScreenState extends State<CleanPaperStudioScreen> {
               ],
             ),
           ),
-          // এক্সপোর্ট বাটন
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -524,7 +515,7 @@ class _LiveQRScannerScreenState extends State<LiveQRScannerScreen> {
   void _onDetectBarcode(BarcodeCapture capture) {
     if (_hasScanned) return;
 
-    final List<Barcode> barcodes = capture.barcodes;
+    final barcodes = capture.barcodes;
     if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
       final String codeValue = barcodes.first.rawValue!;
       setState(() => _hasScanned = true);
@@ -541,11 +532,11 @@ class _LiveQRScannerScreenState extends State<LiveQRScannerScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                const Row(
                   children: [
-                    const Icon(Icons.check_circle, color: Color(0xFF00E5FF)),
-                    const SizedBox(width: 8),
-                    const Text("Code Scanned Successfully", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Icon(Icons.check_circle, color: Color(0xFF00E5FF)),
+                    SizedBox(width: 8),
+                    Text("Code Scanned Successfully", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -654,7 +645,6 @@ class _QRBarcodeGeneratorScreenState extends State<QRBarcodeGeneratorScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // টাইপ সিলেক্টর
             Row(
               children: [
                 Expanded(
@@ -682,7 +672,6 @@ class _QRBarcodeGeneratorScreenState extends State<QRBarcodeGeneratorScreen> {
             ),
             const SizedBox(height: 20),
 
-            // ইনপুট বক্স
             TextField(
               controller: _inputController,
               decoration: InputDecoration(
@@ -696,17 +685,15 @@ class _QRBarcodeGeneratorScreenState extends State<QRBarcodeGeneratorScreen> {
             ),
             const SizedBox(height: 30),
 
-            // লাইভ জেনারেটেড প্রিভিউ কার্ড
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
               child: _isQR
                   ? QrImageView(data: currentData, version: QrVersions.auto, size: 200.0, backgroundColor: Colors.white)
-                  : BarcodeWidget(barcode: Barcode.code128(), data: currentData, width: 240, height: 90, backgroundColor: Colors.white),
+                  : bw.BarcodeWidget(barcode: bw.Barcode.code128(), data: currentData, width: 240, height: 90, backgroundColor: Colors.white),
             ),
             const SizedBox(height: 24),
 
-            // শেয়ার বাটন
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00E5FF),
